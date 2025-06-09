@@ -20,6 +20,7 @@
         - [ ] readable from file
         - [ ] savable to file
     - [ ] Create at default location
+- [ ] Schedule
 
 ## Future improvements
 
