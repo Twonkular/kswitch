@@ -2,7 +2,7 @@
 
 # Key tasks
 
-- [ ] cli interface
+- [x] cli interface
 - [ ] Set
     - [ ] Global Theme
     - [ ] Terminal
