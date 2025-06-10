@@ -1,5 +1,6 @@
 mod cli;
 mod config;
+mod set;
 mod theme;
 
 use clap::Parser;
@@ -31,7 +32,7 @@ fn main() {
             )
         }
         Ok(config) => {
-            let mut cli = Cli::parse();
+            let cli = Cli::parse();
 
             match cli.command {
                 Commands::Toggle => {

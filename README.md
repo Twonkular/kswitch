@@ -7,7 +7,7 @@
     - [ ] Global Theme
     - [ ] Terminal
     - [ ] Colours
-    - [ ] Background
+    - [ ] Wallpaper
     - [ ] Environment Variable (via dbus)
 - [ ] Get
     - [ ] Environment Variable
@@ -15,11 +15,12 @@
 - [ ] Set themes
     - [ ] Light
     - [ ] Dark
-- [ ] Config
-    - [ ] Create config struct
-        - [ ] readable from file
-        - [ ] savable to file
-    - [ ] Create at default location
+- [x] Config
+    - [x] Create config struct
+        - [x] readable from file
+        - [x] saveable to file
+        - [x] editable using default editor
+    - [x] Create at default location
 - [ ] Schedule
 
 ## Future improvements
