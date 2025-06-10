@@ -1,28 +1,59 @@
 mod cli;
+mod config;
 mod theme;
 
-use clap::{Command, Parser};
+use clap::Parser;
 
-use cli::{Cli, Commands};
-use theme::Theme;
+use crate::cli::{Cli, Commands};
+use crate::config::Config;
+use crate::theme::Theme;
 
 fn main() {
-    let mut cli = Cli::parse();
+    // parse config
+    let config_path = dirs::config_dir().unwrap().join("kswitch/config.toml");
+    let config = match config_path.is_file() {
+        true => {
+            println!("{}", &config_path.to_string_lossy());
+            Config::load(&config_path)
+        }
+        false => {
+            let config = Config::default();
+            config.save();
+            Ok(config)
+        }
+    };
 
-    match cli.command {
-        Some(ref mut com) => match com {
-            Commands::Toggle => {
-                println!("Performing Toggle!");
+    match config {
+        Err(e) => {
+            println!(
+                "Error:\tInvalid config file at {}",
+                config_path.to_string_lossy()
+            )
+        }
+        Ok(config) => {
+            let mut cli = Cli::parse();
+
+            match cli.command {
+                Commands::Toggle => {
+                    println!("Performing Toggle!");
+                }
+                Commands::Set { theme } => match theme {
+                    Theme::Light => {
+                        println!("Setting Light theme");
+                    }
+                    Theme::Dark => {
+                        println!("Setting Dark theme");
+                    }
+                },
+                Commands::Config { command } => match command {
+                    cli::ConfigCommand::List => {
+                        println!("{}", toml::to_string(&config).unwrap());
+                    }
+                    cli::ConfigCommand::Edit => {
+                        let _ = config.edit();
+                    }
+                },
             }
-            Commands::Set { theme } => match theme {
-                Theme::Light => {
-                    println!("Setting Light theme");
-                }
-                Theme::Dark => {
-                    println!("Setting Dark theme");
-                }
-            },
-        },
-        None => {}
+        }
     }
 }
