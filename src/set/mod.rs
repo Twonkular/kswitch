@@ -1,4 +1,4 @@
-mod colors;
-mod global_theme;
-mod terminal;
-mod wallpaper;
+pub mod colors;
+pub mod global_theme;
+pub mod terminal;
+pub mod wallpaper;

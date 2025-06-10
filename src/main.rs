@@ -1,5 +1,6 @@
 mod cli;
 mod config;
+mod operations;
 mod set;
 mod theme;
 
