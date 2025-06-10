@@ -8,6 +8,7 @@ use clap::Parser;
 
 use crate::cli::{Cli, Commands};
 use crate::config::Config;
+use crate::operations::set;
 use crate::theme::Theme;
 
 fn main() {
@@ -41,10 +42,12 @@ fn main() {
                 }
                 Commands::Set { theme } => match theme {
                     Theme::Light => {
-                        println!("Setting Light theme");
+                        dbg!("Setting Light theme");
+                        set(&config.light);
                     }
                     Theme::Dark => {
-                        println!("Setting Dark theme");
+                        dbg!("Setting Dark theme");
+                        set(&config.dark);
                     }
                 },
                 Commands::Config { command } => match command {
