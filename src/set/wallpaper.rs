@@ -1,24 +1,54 @@
 use std::fs;
 use std::io::Error;
+use std::os::unix::process::ExitStatusExt;
 use std::path::PathBuf;
 use std::process::{Command, Output};
 
-pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
-    // QDBUS alternative
-    // qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "  ✔  base   !1/2 
-    // var Desktops = desktops();
-    // for (i = 0; i < Desktops.length; i++) {
-    //   d = Desktops[i];
-    //   d.wallpaperPlugin = 'org.kde.image';
-    //   d.currentConfigGroup = Array('Wallpaper', 'org.kde.image', 'General');
-    //   d.writeConfig('Image', 'file:///home/finley/Pictures/wallpapers/flower_mountain_scene/wp12238930-ai-4k-wallpapers.png');
-    // }"
+use zbus::Result as ZbusResult;
+use zbus::blocking::Connection;
 
-    println!("Setting wallpaper to  {}", &wallpaper.to_string_lossy());
-    let out = Command::new("plasma-apply-wallpaperimage")
-        .arg(wallpaper)
-        .output();
-    out
+pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
+    // Convert the path to a file:// URI
+    let wallpaper_uri = format!("file://{}", wallpaper.display());
+
+    // JavaScript script sent to plasmashell via D-Bus
+    let script = format!(
+        "var Desktops = desktops();
+         for (i = 0; i < Desktops.length; i++) {{
+             d = Desktops[i];
+             d.wallpaperPlugin = 'org.kde.image';
+             d.currentConfigGroup = Array('Wallpaper', 'org.kde.image', 'General');
+             d.writeConfig('Image', '{}');
+         }}",
+        wallpaper_uri
+    );
+
+    // Call D-Bus
+    match send_dbus_script(&script) {
+        Ok(_) => Ok(Output {
+            status: std::process::ExitStatus::from_raw(0),
+            stdout: Vec::new(),
+            stderr: Vec::new(),
+        }),
+        Err(e) => Err(Error::new(
+            std::io::ErrorKind::Other,
+            format!("D-Bus error: {e}"),
+        )),
+    }
+}
+
+// Helper to send the D-Bus message
+fn send_dbus_script(script: &str) -> ZbusResult<()> {
+    let connection = Connection::session()?;
+    let proxy = zbus::blocking::Proxy::new(
+        &connection,
+        "org.kde.plasmashell",
+        "/PlasmaShell",
+        "org.kde.PlasmaShell",
+    )?;
+
+    proxy.call_method("evaluateScript", &(script))?;
+    Ok(())
 }
 
 #[cfg(test)] // only build for tests
