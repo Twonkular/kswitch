@@ -4,6 +4,16 @@ use std::path::PathBuf;
 use std::process::{Command, Output};
 
 pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
+    // QDBUS alternative
+    // qdbus org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript "  ✔  base   !1/2 
+    // var Desktops = desktops();
+    // for (i = 0; i < Desktops.length; i++) {
+    //   d = Desktops[i];
+    //   d.wallpaperPlugin = 'org.kde.image';
+    //   d.currentConfigGroup = Array('Wallpaper', 'org.kde.image', 'General');
+    //   d.writeConfig('Image', 'file:///home/finley/Pictures/wallpapers/flower_mountain_scene/wp12238930-ai-4k-wallpapers.png');
+    // }"
+
     println!("Setting wallpaper to  {}", &wallpaper.to_string_lossy());
     let out = Command::new("plasma-apply-wallpaperimage")
         .arg(wallpaper)
