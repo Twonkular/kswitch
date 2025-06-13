@@ -4,12 +4,14 @@ use std::path::PathBuf;
 use std::process::{Command, Output};
 
 pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
+    println!("Setting wallpaper to  {}", &wallpaper.to_string_lossy());
     let out = Command::new("plasma-apply-wallpaperimage")
         .arg(wallpaper)
         .output();
     out
 }
 
+#[cfg(test)] // only build for tests
 fn get_current_wallpaper() -> Option<PathBuf> {
     let config_path: PathBuf =
         dirs::home_dir()?.join(".config/plasma-org.kde.plasma.desktop-appletsrc");

@@ -4,10 +4,10 @@
 
 - [x] cli interface
 - [ ] Set
-    - [ ] Global Theme
+    - [x] Global Theme
     - [ ] Terminal
     - [ ] Colours
-    - [ ] Wallpaper
+    - [x] Wallpaper
     - [ ] Environment Variable (via dbus)
 - [ ] Get
     - [ ] Environment Variable

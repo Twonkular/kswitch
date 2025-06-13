@@ -11,6 +11,7 @@ pub fn set(theme_name: &String) -> Result<Output, Error> {
 }
 
 /// Returns the current KDE Plasma desktop theme name, if found.
+#[cfg(test)] // only build for tests
 fn get_current_desktop_theme() -> Option<String> {
     let config_path: PathBuf = dirs::home_dir()?.join(".config/plasmarc");
     let contents = fs::read_to_string(config_path).ok()?;
