@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use toml;
 
-use crate::schedule::{self, Schedule};
+use crate::schedule::Schedule;
 use crate::theme::Style;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -84,9 +84,7 @@ impl Config {
 
         // spawn the editor process
         let mut command = Command::new(editor);
-        println!("PATH {}", self.path.to_string_lossy());
         command.arg(&self.path);
-        println!("{}", self.path.to_string_lossy());
 
         // execute command
         match command.spawn() {
