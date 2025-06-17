@@ -42,11 +42,11 @@ fn main() {
                 Commands::Set { theme } => match theme {
                     Theme::Light => {
                         dbg!("Setting Light theme");
-                        set(&config.light, &theme);
+                        set(&config.light, &theme, &config);
                     }
                     Theme::Dark => {
                         dbg!("Setting Dark theme");
-                        set(&config.dark, &theme);
+                        set(&config.dark, &theme, &config);
                     }
                 },
                 Commands::Config { command } => match command {
