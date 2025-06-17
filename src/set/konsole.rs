@@ -1,11 +1,13 @@
-use std::error::Error;
-use std::fs;
-use std::io::Write;
-
 use crate::{
     config::{self, Config},
     theme::Theme,
 };
+use std::error::Error;
+use std::fs;
+use std::io::Write;
+use std::result::Result;
+use zbus;
+use zbus::blocking::Connection;
 
 fn set_default_profile(theme: &Theme, config: &Config) -> Result<(), Box<dyn Error>> {
     // Read the file contents into a String
@@ -44,8 +46,24 @@ fn set_session_theme(session_id: String, theme: &Theme) {
     todo!()
 }
 
-fn get_session_ids() -> Vec<String> {
-    todo!()
+fn get_session_ids() -> zbus::Result<Vec<String>> {
+    // Connect to the session bus
+    let connection = Connection::session()?;
+
+    // Get a proxy to the org.freedesktop.DBus interface
+    let proxy = zbus::blocking::fdo::DBusProxy::new(&connection)?;
+
+    // List all names registered on the bus
+    let names = proxy.list_names()?;
+
+    // Filter names that contain "org.kde.konsole"
+    let konsole_names = names
+        .into_iter()
+        .filter(|name| name.contains("org.kde.konsole"))
+        .map(|name| name.to_string())
+        .collect();
+
+    Ok(konsole_names)
 }
 
 pub fn set(theme: &Theme, config: &Config) {
@@ -56,4 +74,18 @@ pub fn set(theme: &Theme, config: &Config) {
     // for id in session_ids.iter() {
     //     println!("{}", id);
     // }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_open_konsoles() {
+        let konsole_ids = get_session_ids().unwrap();
+
+        for id in konsole_ids.iter() {
+            println!("{}", id);
+        }
+    }
 }
