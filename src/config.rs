@@ -18,6 +18,7 @@ pub struct Config {
     pub light: Style,
     pub dark: Style,
     pub schedule: Schedule,
+    pub konsolerc: PathBuf,
 }
 
 impl Default for Config {
@@ -49,6 +50,11 @@ impl Default for Config {
                 light: light_style,
                 dark: dark_style,
                 schedule: schedule,
+                konsolerc: PathBuf::from(
+                    dirs::config_dir()
+                        .unwrap_or(PathBuf::from("~/.config"))
+                        .join("konsolerc"),
+                ),
             }
         }
     }
@@ -137,6 +143,11 @@ mod tests {
             light: light_style,
             dark: dark_style,
             schedule: Schedule::default(),
+            konsolerc: PathBuf::from(
+                dirs::config_dir()
+                    .unwrap_or(PathBuf::from("~/.config"))
+                    .join("konsolerc"),
+            ),
         };
 
         let _ = conf.save();
@@ -144,6 +155,7 @@ mod tests {
         let loaded = Config::load(&conf.path).unwrap();
         assert!(loaded.light.color_scheme == String::from("BreathLight"));
         assert!(loaded.dark.color_scheme == String::from("BreathDark"));
+        assert!(loaded.konsolerc.is_file());
 
         let _ = remove_file(loaded.path);
     }
