@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use toml;
 
+use crate::schedule::{self, Schedule};
 use crate::theme::Style;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -16,6 +17,7 @@ pub struct Config {
     pub path: PathBuf,
     pub light: Style,
     pub dark: Style,
+    pub schedule: Schedule,
 }
 
 impl Default for Config {
@@ -41,10 +43,12 @@ impl Default for Config {
                 desktop_theme: String::from("breath-dark"),
                 terminal_profile: String::from("dark"),
             };
+            let schedule = Schedule::default();
             Config {
                 path: path,
                 light: light_style,
                 dark: dark_style,
+                schedule: schedule,
             }
         }
     }
@@ -132,6 +136,7 @@ mod tests {
             path: temp_dir().join("testconfig.toml"),
             light: light_style,
             dark: dark_style,
+            schedule: Schedule::default(),
         };
 
         let _ = conf.save();

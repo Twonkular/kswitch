@@ -6,6 +6,9 @@
 - [ ] Set
     - [x] Global Theme
     - [ ] Terminal
+        - [ ] set default theme in .config/konsolrc using toml
+        - [ ] set each window theme using `qdbus org.kde.konsole-4206 /Sessions/1 org.kde.konsole.Session.setProfile dark`
+        - [ ] for window in `qdbus | grep org.kde.konsole`
     - [x] Color scheme
     - [x] Wallpaper
     - [ ] Cursor theme

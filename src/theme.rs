@@ -4,12 +4,21 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 /// Theme types, also used as part of the cli subcommand structure
-#[derive(Subcommand, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Subcommand, Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum Theme {
     #[command(about = "Set theme to Light")]
     Light,
     #[command(about = "Set theme to Dark")]
     Dark,
+}
+
+impl ToString for Theme {
+    fn to_string(&self) -> String {
+        match self {
+            Theme::Light => "light".to_string(),
+            Theme::Dark => "dark".to_string(),
+        }
+    }
 }
 
 impl FromStr for Theme {

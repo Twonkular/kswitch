@@ -1,34 +1,16 @@
 use crate::config::Config;
 use crate::set::{color_scheme, global_theme, wallpaper};
-use crate::theme::Style;
+use crate::theme::{Style, Theme};
+use std::process::Command;
 use std::sync::{Arc, Barrier};
 use std::thread;
 
-// pub fn set(style: &Style) {
-//     // TODO: remove need to clone here?
-//     let theme = style.desktop_theme.clone();
-//     let wallpaper = style.wallpaper.clone();
-//     let color_scheme = style.color_scheme.clone();
-//
-//     let theme_handle = thread::spawn(move || {
-//         let _ = global_theme::set(&theme);
-//     });
-//
-//     let wallpaper_handle = thread::spawn(move || {
-//         let _ = wallpaper::set(&wallpaper);
-//     });
-//
-//     let color_scheme_handle = thread::spawn(move || {
-//         let _ = color_scheme::set(&color_scheme);
-//     });
-//
-//     // Wait for both to finish
-//     let _ = theme_handle.join();
-//     let _ = wallpaper_handle.join();
-//     let _ = color_scheme_handle.join();
-// }
-pub fn set(style: &Style) {
-    let theme = style.desktop_theme.clone();
+use std::fs;
+
+use crate::get::target_theme;
+
+pub fn set(style: &Style, theme: &Theme) {
+    let global_theme = style.desktop_theme.clone();
     let wallpaper = style.wallpaper.clone();
     let color_scheme = style.color_scheme.clone();
 
@@ -38,7 +20,7 @@ pub fn set(style: &Style) {
     let barrier1 = Arc::clone(&barrier);
     let theme_handle = thread::spawn(move || {
         barrier1.wait(); // Wait until all threads are ready
-        let _ = global_theme::set(&theme);
+        let _ = global_theme::set(&global_theme);
     });
 
     let barrier2 = Arc::clone(&barrier);
@@ -59,8 +41,24 @@ pub fn set(style: &Style) {
     let _ = theme_handle.join();
     let _ = wallpaper_handle.join();
     let _ = color_scheme_handle.join();
+
+    // set environment variable for theme
+    let result = Command::new("systemctl")
+        .arg("--user")
+        .arg("import-environment")
+        .arg("KSWITCH_THEME")
+        .env("KSWITCH_THEME", &theme.to_string().as_str()) // pass clone or reference
+        .status();
+    dbg!(result);
 }
 
-pub fn toggle(config: Config) {
-    todo!();
+pub fn toggle(config: &Config) {
+    let target_theme = target_theme::get(config);
+
+    dbg!(&target_theme);
+    // set to non-current state
+    match target_theme {
+        Theme::Light => set(&config.light, &Theme::Light),
+        Theme::Dark => set(&config.dark, &Theme::Dark),
+    }
 }
