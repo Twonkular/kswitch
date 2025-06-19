@@ -7,7 +7,7 @@ use std::fs;
 use std::io::Write;
 use std::result::Result;
 use zbus;
-use zbus::blocking::Connection;
+use zbus::blocking::{Connection, Proxy};
 
 fn set_default_profile(theme: &Theme, config: &Config) -> Result<(), Box<dyn Error>> {
     // Read the file contents into a String
@@ -42,8 +42,26 @@ fn set_default_profile(theme: &Theme, config: &Config) -> Result<(), Box<dyn Err
     Ok(())
 }
 
-fn set_session_theme(session_id: String, theme: &Theme) {
-    todo!()
+fn set_session_theme(session_id: &String, theme: &Theme) -> Result<(), Box<dyn Error>> {
+    // Connect to the session bus
+    let connection = Connection::session()?;
+
+    // Compose the D-Bus destination and object path
+    let service_name = format!("{}", session_id);
+    let object_path = "/Sessions/1"; // Hardcoded like your qdbus example
+
+    // Create a proxy for the org.kde.konsole.Session interface
+    let proxy = Proxy::new(
+        &connection,
+        service_name.as_str(),
+        object_path,
+        "org.kde.konsole.Session",
+    )?;
+
+    // Call the setProfile method
+    proxy.call_method("setProfile", &theme.to_string())?;
+
+    Ok(())
 }
 
 fn get_session_ids() -> zbus::Result<Vec<String>> {
@@ -69,11 +87,13 @@ fn get_session_ids() -> zbus::Result<Vec<String>> {
 pub fn set(theme: &Theme, config: &Config) {
     let _ = set_default_profile(theme, config);
 
-    // let session_ids = get_session_ids();
+    let session_ids = get_session_ids().unwrap();
 
-    // for id in session_ids.iter() {
-    //     println!("{}", id);
-    // }
+    for session_id in session_ids.iter() {
+        println!("{}", session_id);
+        let out = set_session_theme(session_id, theme);
+        dbg!(&out);
+    }
 }
 
 #[cfg(test)]
