@@ -2,6 +2,8 @@
 
 A simple command line tool for light/dark theme switching in KDE Plasma.
 
+![transition.gif](transition.gif)
+
 ## Features
 
 - Command line interface to set or toggle theme
