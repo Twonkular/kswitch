@@ -14,12 +14,10 @@ pub fn get(config: &Config) -> Theme {
     let current = match env::var("KSWITCH_THEME") {
         Ok(theme) => {
             // Try to get the theme from environment_variable
-            dbg!("theme from environment var");
             Theme::from_str(theme.as_str()).unwrap()
         }
         Err(e) => {
             // otherwise get from time of day/daylight hours
-            dbg!("theme from time");
             get_from_time(config)
         }
     };

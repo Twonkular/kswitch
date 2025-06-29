@@ -90,9 +90,7 @@ pub fn set(theme: &Theme, config: &Config) {
     let session_ids = get_session_ids().unwrap();
 
     for session_id in session_ids.iter() {
-        println!("{}", session_id);
         let out = set_session_theme(session_id, theme);
-        dbg!(&out);
     }
 }
 

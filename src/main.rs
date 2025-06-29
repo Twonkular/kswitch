@@ -17,13 +17,10 @@ fn main() {
     // parse config
     let config_path = dirs::config_dir().unwrap().join("kswitch/config.toml");
     let config = match config_path.is_file() {
-        true => {
-            println!("{}", &config_path.to_string_lossy());
-            Config::load(&config_path)
-        }
+        true => Config::load(&config_path),
         false => {
             let config = Config::default();
-            config.save();
+            _ = config.save();
             Ok(config)
         }
     };

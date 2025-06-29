@@ -58,7 +58,6 @@ pub fn set(style: &Style, theme: &Theme, config: &Config) {
 pub fn toggle(config: &Config) {
     let target_theme = target_theme::get(config);
 
-    dbg!(&target_theme);
     // set to non-current state
     match target_theme {
         Theme::Light => set(&config.light, &Theme::Light, &config),
