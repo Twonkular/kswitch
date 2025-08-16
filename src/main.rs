@@ -38,11 +38,9 @@ fn main() {
             match cli.command {
                 Commands::Set { theme } => match theme {
                     Theme::Light => {
-                        dbg!("Setting Light theme");
                         set(&theme, &config);
                     }
                     Theme::Dark => {
-                        dbg!("Setting Dark theme");
                         set(&theme, &config);
                     }
                 },

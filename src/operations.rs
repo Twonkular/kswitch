@@ -47,6 +47,10 @@ pub fn set(theme: &Theme, config: &Config) {
     let _ = wallpaper_handle.join();
     let _ = color_scheme_handle.join();
 
+    // apply default theme to konsole
+    // This does not need to be done in parallel as it is non-visual
+    konsole::set(&theme, &config);
+
     // set environment variable for theme
     let result = Command::new("systemctl")
         .arg("--user")
@@ -54,10 +58,6 @@ pub fn set(theme: &Theme, config: &Config) {
         .arg("KSWITCH_THEME")
         .env("KSWITCH_THEME", &theme.to_string().as_str()) // pass clone or reference
         .status();
-
-    // apply default theme to konsole
-    // This does not need to be done in parallel as it is non-visual
-    konsole::set(&theme, &config);
 }
 
 pub fn toggle(config: &Config) {
@@ -79,8 +79,6 @@ mod tests {
         let config = Config::default();
         let theme = Theme::Light;
         set(&theme, &config);
-        dbg!("set light!");
-        dbg!(&config);
     }
 
     #[test]
@@ -88,7 +86,10 @@ mod tests {
         let config = Config::default();
         let theme = Theme::Dark;
         set(&theme, &config);
-        dbg!("set dark!");
-        dbg!(&config);
+    }
+
+    fn test_toggle() {
+        let config = Config::default();
+        toggle(&config);
     }
 }

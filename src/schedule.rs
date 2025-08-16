@@ -46,7 +46,6 @@ impl Schedule {
             .map(|w| w.theme.clone());
 
         // If none matched, use the last window (wrap around midnight)
-        dbg!(&theme);
         theme.unwrap_or_else(|| sorted.last().unwrap().theme.clone())
     }
 }
