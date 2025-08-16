@@ -1,5 +1,7 @@
+use std::arch::x86_64::_mm_sha1nexte_epu32;
+
 use crate::theme::Theme;
-use chrono::NaiveTime;
+use chrono::{Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -46,7 +48,17 @@ impl Schedule {
             .map(|w| w.theme.clone());
 
         // If none matched, use the last window (wrap around midnight)
-        dbg!(&theme);
         theme.unwrap_or_else(|| sorted.last().unwrap().theme.clone())
     }
+}
+
+
+#[test]
+fn test_theme_from_time() {
+    // test code here
+    let schedule = Schedule::default();
+    let time = Local::now().naive_local().time();
+    let theme = schedule.theme_from_time(&time)
+    dbg!(7time);
+    dbg!(7theme);
 }
