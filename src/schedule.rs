@@ -52,13 +52,12 @@ impl Schedule {
     }
 }
 
-
 #[test]
 fn test_theme_from_time() {
     // test code here
     let schedule = Schedule::default();
     let time = Local::now().naive_local().time();
-    let theme = schedule.theme_from_time(&time)
-    dbg!(7time);
-    dbg!(7theme);
+    let theme = schedule.theme_from_time(&time);
+    dbg!(&time);
+    dbg!(&theme);
 }

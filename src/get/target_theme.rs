@@ -17,7 +17,7 @@ pub fn get(config: &Config) -> Theme {
             Theme::from_str(theme.as_str()).unwrap()
         }
         Err(e) => {
-            // otherwise get from time of day/daylight hours
+            // otherwise get the current from time of day
             get_from_time(config)
         }
     };
