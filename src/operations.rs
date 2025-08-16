@@ -9,7 +9,12 @@ use std::fs;
 
 use crate::get::target_theme;
 
-pub fn set(style: &Style, theme: &Theme, config: &Config) {
+pub fn set(theme: &Theme, config: &Config) {
+    let style = match theme {
+        Theme::Dark => &config.dark,
+        Theme::Light => &config.light,
+    };
+
     let global_theme = style.desktop_theme.clone();
     let wallpaper = style.wallpaper.clone();
     let color_scheme = style.color_scheme.clone();
@@ -60,7 +65,30 @@ pub fn toggle(config: &Config) {
 
     // set to non-current state
     match target_theme {
-        Theme::Light => set(&config.light, &Theme::Light, &config),
-        Theme::Dark => set(&config.dark, &Theme::Dark, &config),
+        Theme::Light => set(&Theme::Light, &config),
+        Theme::Dark => set(&Theme::Dark, &config),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_set_light() {
+        let config = Config::default();
+        let theme = Theme::Light;
+        set(&theme, &config);
+        dbg!("set light!");
+        dbg!(&config);
+    }
+
+    #[test]
+    fn test_set_dark() {
+        let config = Config::default();
+        let theme = Theme::Dark;
+        set(&theme, &config);
+        dbg!("set dark!");
+        dbg!(&config);
     }
 }
