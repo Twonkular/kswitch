@@ -1,4 +1,4 @@
-use clap::{Error, Subcommand};
+use clap::Subcommand;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::str::FromStr;

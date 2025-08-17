@@ -1,5 +1,7 @@
+use std::arch::x86_64::_mm_sha1nexte_epu32;
+
 use crate::theme::Theme;
-use chrono::NaiveTime;
+use chrono::{Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -46,7 +48,22 @@ impl Schedule {
             .map(|w| w.theme.clone());
 
         // If none matched, use the last window (wrap around midnight)
-        dbg!(&theme);
         theme.unwrap_or_else(|| sorted.last().unwrap().theme.clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(NaiveTime::from_hms_opt(0, 0, 0).unwrap(), Theme::Dark)]
+    #[case(NaiveTime::from_hms_opt(10, 0, 0).unwrap(), Theme::Light)]
+    #[case(NaiveTime::from_hms_opt(21, 0, 0).unwrap(), Theme::Dark)]
+    fn test_theme_from_time(#[case] time: NaiveTime, #[case] theme: Theme) {
+        let schedule = Schedule::default();
+        let result = schedule.theme_from_time(&time);
+        assert_eq!(result, theme);
     }
 }
