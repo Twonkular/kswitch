@@ -25,37 +25,31 @@ impl Default for Config {
     fn default() -> Self {
         let path = dirs::config_dir().unwrap().join("kswitch/config.toml");
 
-        if path.is_file() {
-            Config::load(&path).unwrap()
-        } else {
-            let light_style = Style {
-                wallpaper: PathBuf::from(
-                    "/usr/share/wallpapers/Bamboo/contents/images/5120x2880.png",
-                ),
-                color_scheme: String::from("BreathLight"),
-                desktop_theme: String::from("breath"),
-                terminal_profile: String::from("light"),
-            };
-            let dark_style = Style {
-                wallpaper: PathBuf::from(
-                    "/usr/share/wallpapers/Bamboo at Night/contents/images/5120x2880.png",
-                ),
-                color_scheme: String::from("BreathDark"),
-                desktop_theme: String::from("breath-dark"),
-                terminal_profile: String::from("dark"),
-            };
-            let schedule = Schedule::default();
-            Config {
-                path: path,
-                light: light_style,
-                dark: dark_style,
-                schedule: schedule,
-                konsolerc: PathBuf::from(
-                    dirs::config_dir()
-                        .unwrap_or(PathBuf::from("~/.config"))
-                        .join("konsolerc"),
-                ),
-            }
+        let light_style = Style {
+            wallpaper: PathBuf::from("/usr/share/wallpapers/Bamboo/contents/images/5120x2880.png"),
+            color_scheme: String::from("BreathLight"),
+            desktop_theme: String::from("breath"),
+            terminal_profile: String::from("light"),
+        };
+        let dark_style = Style {
+            wallpaper: PathBuf::from(
+                "/usr/share/wallpapers/Bamboo at Night/contents/images/5120x2880.png",
+            ),
+            color_scheme: String::from("BreathDark"),
+            desktop_theme: String::from("breath-dark"),
+            terminal_profile: String::from("dark"),
+        };
+        let schedule = Schedule::default();
+        Config {
+            path: path,
+            light: light_style,
+            dark: dark_style,
+            schedule: schedule,
+            konsolerc: PathBuf::from(
+                dirs::config_dir()
+                    .unwrap_or(PathBuf::from("~/.config"))
+                    .join("konsolerc"),
+            ),
         }
     }
 }

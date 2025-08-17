@@ -11,7 +11,7 @@ use crate::config::Config;
 use crate::operations::{set, toggle};
 use crate::theme::Theme;
 
-use clap::{Parser, command};
+use clap::Parser;
 
 fn main() {
     // parse config
@@ -38,12 +38,10 @@ fn main() {
             match cli.command {
                 Commands::Set { theme } => match theme {
                     Theme::Light => {
-                        dbg!("Setting Light theme");
-                        set(&config.light, &theme, &config);
+                        set(&theme, &config);
                     }
                     Theme::Dark => {
-                        dbg!("Setting Dark theme");
-                        set(&config.dark, &theme, &config);
+                        set(&theme, &config);
                     }
                 },
                 Commands::Config { command } => match command {
