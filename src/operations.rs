@@ -64,10 +64,7 @@ pub fn toggle(config: &Config) {
     let target_theme = target_theme::get(config);
 
     // set to non-current state
-    match target_theme {
-        Theme::Light => set(&Theme::Light, &config),
-        Theme::Dark => set(&Theme::Dark, &config),
-    }
+    set(&target_theme, &config);
 }
 
 #[cfg(test)]
@@ -88,6 +85,7 @@ mod tests {
         set(&theme, &config);
     }
 
+    #[test]
     fn test_toggle() {
         let config = Config::default();
         toggle(&config);

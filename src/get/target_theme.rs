@@ -12,19 +12,18 @@ fn get_theme_from_schedule(config: &Config) -> Theme {
 
 /// Gets the current kswitch theme, either by reading the environment variable, if it exits, otherwise it is determined from the time of dat and the schedule defined in config.
 pub fn get(config: &Config) -> Theme {
-    let current = match env::var("KSWITCH_THEME") {
+    match env::var("KSWITCH_THEME") {
         Ok(theme) => {
             // Try to get the theme from environment_variable
-            Theme::from_str(theme.as_str()).unwrap()
+            let current = Theme::from_str(theme.as_str()).unwrap();
+            match current {
+                Theme::Dark => Theme::Light,
+                Theme::Light => Theme::Dark,
+            }
         }
         Err(e) => {
             // otherwise get the current from time of day
             get_theme_from_schedule(config)
         }
-    };
-
-    match current {
-        Theme::Dark => Theme::Light,
-        Theme::Light => Theme::Dark,
     }
 }
