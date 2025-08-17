@@ -52,12 +52,18 @@ impl Schedule {
     }
 }
 
-#[test]
-fn test_theme_from_time() {
-    // test code here
-    let schedule = Schedule::default();
-    let time = Local::now().naive_local().time();
-    let theme = schedule.theme_from_time(&time);
-    dbg!(&time);
-    dbg!(&theme);
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(NaiveTime::from_hms_opt(0, 0, 0).unwrap(), Theme::Dark)]
+    #[case(NaiveTime::from_hms_opt(10, 0, 0).unwrap(), Theme::Light)]
+    #[case(NaiveTime::from_hms_opt(21, 0, 0).unwrap(), Theme::Dark)]
+    fn test_theme_from_time(#[case] time: NaiveTime, #[case] theme: Theme) {
+        let schedule = Schedule::default();
+        let result = schedule.theme_from_time(&time);
+        assert_eq!(result, theme);
+    }
 }

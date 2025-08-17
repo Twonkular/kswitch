@@ -5,11 +5,12 @@ use std::str::FromStr;
 
 use crate::config::Config;
 
-fn get_from_time(config: &Config) -> Theme {
+fn get_theme_from_schedule(config: &Config) -> Theme {
     let time = Local::now().naive_local().time();
     config.schedule.theme_from_time(&time)
 }
 
+/// Gets the current kswitch theme, either by reading the environment variable, if it exits, otherwise it is determined from the time of dat and the schedule defined in config.
 pub fn get(config: &Config) -> Theme {
     let current = match env::var("KSWITCH_THEME") {
         Ok(theme) => {
@@ -18,23 +19,12 @@ pub fn get(config: &Config) -> Theme {
         }
         Err(e) => {
             // otherwise get the current from time of day
-            get_from_time(config)
+            get_theme_from_schedule(config)
         }
     };
 
     match current {
         Theme::Dark => Theme::Light,
         Theme::Light => Theme::Dark,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_basic() {
-        let config = Config::default();
-        let out = get(&config);
     }
 }
