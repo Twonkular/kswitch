@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::set::{color_scheme, global_theme, konsole, wallpaper};
 use crate::theme::{Style, Theme};
+use std::env::set_var;
 use std::process::Command;
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -52,12 +53,17 @@ pub fn set(theme: &Theme, config: &Config) {
     konsole::set(&theme, &config);
 
     // set environment variable for theme
-    let result = Command::new("systemctl")
+    let _ = Command::new("systemctl")
         .arg("--user")
         .arg("import-environment")
         .arg("KSWITCH_THEME")
         .env("KSWITCH_THEME", &theme.to_string().as_str()) // pass clone or reference
         .status();
+
+    // set environment variable for current session
+    unsafe {
+        let _ = set_var("KSWITCH_THEME", &theme.to_string().as_str());
+    }
 }
 
 pub fn toggle(config: &Config) {
