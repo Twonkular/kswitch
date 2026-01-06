@@ -86,12 +86,12 @@ kswitch config edit
         - [x] Save to file
         - [x] Edit via default editor
     - [x] Auto-create at default location
-- [ ] Add support for user-defined scripts:
+- [x] Add support for user-defined scripts:
     - `~/.config/kswitch/light/`
     - `~/.config/kswitch/dark/`
     - [x] create directories if empty
-    - [ ] populate list of files to run on switch
-    - [ ] execute files on switch
+    - [x] populate list of files to run on switch
+    - [x] execute files on switch
 
 ## Future Improvements
 

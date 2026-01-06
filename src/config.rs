@@ -116,6 +116,8 @@ impl Config {
         config.path = dirs::config_dir().unwrap().join("kswitch/config.toml");
 
         // create script dirs if needed
+        config.light_scripts_dir = config.path.parent().unwrap().join("light");
+        config.dark_scripts_dir = config.path.parent().unwrap().join("dark");
         config.create_script_dirs();
 
         log::info!("Loaded config from {}", file_path.to_string_lossy());

@@ -6,6 +6,7 @@ use std::process::Command;
 use std::sync::{Arc, Barrier};
 use std::thread;
 
+use log;
 use std::fs;
 
 use crate::get::target_theme;
@@ -63,6 +64,70 @@ pub fn set(theme: &Theme, config: &Config) {
     // set environment variable for current session
     unsafe {
         let _ = set_var("KSWITCH_THEME", &theme.to_string().as_str());
+    }
+
+    // Run user scripts for the theme
+    run_theme_scripts(theme, config);
+}
+
+fn run_theme_scripts(theme: &Theme, config: &Config) {
+    let scripts_dir = match theme {
+        Theme::Dark => &config.dark_scripts_dir,
+        Theme::Light => &config.light_scripts_dir,
+    };
+
+    // Check if directory exists
+    if !scripts_dir.is_dir() {
+        log::debug!(
+            "Scripts directory does not exist: {}",
+            scripts_dir.to_string_lossy()
+        );
+        return;
+    }
+
+    // Read all files in the scripts directory
+    match std::fs::read_dir(scripts_dir) {
+        Ok(entries) => {
+            for entry in entries {
+                if let Ok(entry) = entry {
+                    let path = entry.path();
+
+                    // Skip directories, only execute files
+                    if path.is_file() {
+                        log::info!("Running script: {}", path.to_string_lossy());
+                        match Command::new(&path).status() {
+                            Ok(status) => {
+                                if status.success() {
+                                    log::info!(
+                                        "Script executed successfully: {}",
+                                        path.to_string_lossy()
+                                    );
+                                } else {
+                                    log::warn!(
+                                        "Script exited with non-zero status: {}",
+                                        path.to_string_lossy()
+                                    );
+                                }
+                            }
+                            Err(e) => {
+                                log::error!(
+                                    "Failed to execute script {}: {}",
+                                    path.to_string_lossy(),
+                                    e
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            log::error!(
+                "Failed to read scripts directory {}: {}",
+                scripts_dir.to_string_lossy(),
+                e
+            );
+        }
     }
 }
 
