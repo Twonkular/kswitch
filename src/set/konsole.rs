@@ -1,7 +1,5 @@
-use crate::{
-    config::{self, Config},
-    theme::Theme,
-};
+use crate::{config::Config, theme::Theme};
+use log;
 use std::error::Error;
 use std::fs;
 use std::io::Write;
@@ -10,6 +8,11 @@ use zbus;
 use zbus::blocking::{Connection, Proxy};
 
 fn set_default_profile(theme: &Theme, config: &Config) -> Result<(), Box<dyn Error>> {
+    log::debug!(
+        "Setting default Konsole profile to: {}.profile",
+        theme.to_string()
+    );
+
     // Read the file contents into a String
     let contents = fs::read_to_string(&config.konsolerc)?;
 
@@ -39,10 +42,20 @@ fn set_default_profile(theme: &Theme, config: &Config) -> Result<(), Box<dyn Err
         writeln!(file, "{}", line)?;
     }
 
+    log::info!(
+        "Default Konsole profile updated to: {}.profile",
+        theme.to_string()
+    );
     Ok(())
 }
 
 fn set_session_theme(session_id: &String, theme: &Theme) -> Result<(), Box<dyn Error>> {
+    log::debug!(
+        "Setting Konsole session {} profile to: {}",
+        session_id,
+        theme.to_string()
+    );
+
     // Connect to the session bus
     let connection = Connection::session()?;
 
@@ -61,10 +74,17 @@ fn set_session_theme(session_id: &String, theme: &Theme) -> Result<(), Box<dyn E
     // Call the setProfile method
     proxy.call_method("setProfile", &theme.to_string())?;
 
+    log::info!(
+        "Konsole session {} profile set to: {}",
+        session_id,
+        theme.to_string()
+    );
     Ok(())
 }
 
 fn get_session_ids() -> zbus::Result<Vec<String>> {
+    log::debug!("Retrieving list of Konsole session IDs from D-Bus");
+
     // Connect to the session bus
     let connection = Connection::session()?;
 
@@ -75,22 +95,57 @@ fn get_session_ids() -> zbus::Result<Vec<String>> {
     let names = proxy.list_names()?;
 
     // Filter names that contain "org.kde.konsole"
-    let konsole_names = names
+    let konsole_names: Vec<String> = names
         .into_iter()
         .filter(|name| name.contains("org.kde.konsole"))
         .map(|name| name.to_string())
         .collect();
 
+    log::debug!("Found {} Konsole session(s)", konsole_names.len());
     Ok(konsole_names)
 }
 
 pub fn set(theme: &Theme, config: &Config) {
-    let _ = set_default_profile(theme, config);
+    log::info!("Configuring Konsole theme to: {}", theme.to_string());
 
-    let session_ids = get_session_ids().unwrap();
+    // Set the default profile in konsolerc
+    match set_default_profile(theme, config) {
+        Ok(_) => {
+            log::debug!("Successfully updated konsolerc default profile");
+        }
+        Err(e) => {
+            log::warn!("Failed to update default Konsole profile: {}", e);
+        }
+    }
 
-    for session_id in session_ids.iter() {
-        let out = set_session_theme(session_id, theme);
+    // Get all active Konsole sessions and update their profiles
+    match get_session_ids() {
+        Ok(session_ids) => {
+            if session_ids.is_empty() {
+                log::debug!("No active Konsole sessions found");
+                return;
+            }
+
+            log::info!(
+                "Updating {} active Konsole session(s) to theme: {}",
+                session_ids.len(),
+                theme.to_string()
+            );
+
+            for session_id in session_ids.iter() {
+                match set_session_theme(session_id, theme) {
+                    Ok(_) => {
+                        log::debug!("Session {} profile updated successfully", session_id);
+                    }
+                    Err(e) => {
+                        log::warn!("Failed to update session {} profile: {}", session_id, e);
+                    }
+                }
+            }
+        }
+        Err(e) => {
+            log::warn!("Failed to retrieve Konsole session IDs: {}", e);
+        }
     }
 }
 

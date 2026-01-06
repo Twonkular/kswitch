@@ -1,13 +1,15 @@
-use std::fs;
+use log;
 use std::io::Error;
 use std::os::unix::process::ExitStatusExt;
 use std::path::PathBuf;
-use std::process::{Command, Output};
+use std::process::Output;
 
 use zbus::Result as ZbusResult;
 use zbus::blocking::Connection;
 
 pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
+    log::info!("Applying wallpaper: {}", wallpaper.to_string_lossy());
+
     // Convert the path to a file:// URI
     let wallpaper_uri = format!("file://{}", wallpaper.display());
 
@@ -23,22 +25,34 @@ pub fn set(wallpaper: &PathBuf) -> Result<Output, Error> {
         wallpaper_uri
     );
 
+    log::debug!("Sending wallpaper configuration via D-Bus to plasmashell");
+
     // Call D-Bus
     match send_dbus_script(&script) {
-        Ok(_) => Ok(Output {
-            status: std::process::ExitStatus::from_raw(0),
-            stdout: Vec::new(),
-            stderr: Vec::new(),
-        }),
-        Err(e) => Err(Error::new(
-            std::io::ErrorKind::Other,
-            format!("D-Bus error: {e}"),
-        )),
+        Ok(_) => {
+            log::info!(
+                "Wallpaper applied successfully: {}",
+                wallpaper.to_string_lossy()
+            );
+            Ok(Output {
+                status: std::process::ExitStatus::from_raw(0),
+                stdout: Vec::new(),
+                stderr: Vec::new(),
+            })
+        }
+        Err(e) => {
+            log::error!("Failed to apply wallpaper via D-Bus: {}", e);
+            Err(Error::new(
+                std::io::ErrorKind::Other,
+                format!("D-Bus error: {e}"),
+            ))
+        }
     }
 }
 
 // Helper to send the D-Bus message
 fn send_dbus_script(script: &str) -> ZbusResult<()> {
+    log::debug!("Connecting to D-Bus session");
     let connection = Connection::session()?;
     let proxy = zbus::blocking::Proxy::new(
         &connection,
@@ -47,7 +61,9 @@ fn send_dbus_script(script: &str) -> ZbusResult<()> {
         "org.kde.PlasmaShell",
     )?;
 
+    log::debug!("Calling plasmashell evaluateScript method");
     proxy.call_method("evaluateScript", &(script))?;
+    log::debug!("D-Bus script execution completed");
     Ok(())
 }
 
@@ -55,7 +71,7 @@ fn send_dbus_script(script: &str) -> ZbusResult<()> {
 fn get_current_wallpaper() -> Option<PathBuf> {
     let config_path: PathBuf =
         dirs::home_dir()?.join(".config/plasma-org.kde.plasma.desktop-appletsrc");
-    let contents = fs::read_to_string(config_path).ok()?;
+    let contents = std::fs::read_to_string(config_path).ok()?;
 
     let mut in_wallpaper_section = false;
     for line in contents.lines() {

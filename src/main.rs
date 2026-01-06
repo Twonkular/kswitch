@@ -12,6 +12,7 @@ use crate::operations::{set, toggle};
 use crate::theme::Theme;
 
 use clap::Parser;
+use log;
 
 fn main() {
     env_logger::init();
@@ -20,6 +21,10 @@ fn main() {
     let config = match config_path.is_file() {
         true => Config::load(&config_path),
         false => {
+            log::info!(
+                "Creating default config at {}",
+                config_path.to_string_lossy()
+            );
             let config = Config::default();
             _ = config.save();
             Ok(config)
@@ -28,32 +33,39 @@ fn main() {
 
     match config {
         Err(e) => {
-            println!(
-                "Error:\tInvalid config file at {}",
-                config_path.to_string_lossy()
+            log::error!(
+                "Invalid config file at {}: {}",
+                config_path.to_string_lossy(),
+                e
             )
         }
         Ok(config) => {
             let cli = Cli::parse();
 
             match cli.command {
-                Commands::Set { theme } => match theme {
-                    Theme::Light => {
-                        set(&theme, &config);
+                Commands::Set { theme } => {
+                    log::info!("Setting theme to {}", theme.to_string());
+                    match theme {
+                        Theme::Light => {
+                            set(&theme, &config);
+                        }
+                        Theme::Dark => {
+                            set(&theme, &config);
+                        }
                     }
-                    Theme::Dark => {
-                        set(&theme, &config);
-                    }
-                },
+                }
                 Commands::Config { command } => match command {
                     cli::ConfigCommand::List => {
+                        log::info!("Listing configuration");
                         println!("{}", toml::to_string(&config).unwrap());
                     }
                     cli::ConfigCommand::Edit => {
+                        log::info!("Opening configuration editor");
                         let _ = config.edit();
                     }
                 },
                 Commands::Toggle => {
+                    log::info!("Toggling theme");
                     toggle(&config);
                 }
             }

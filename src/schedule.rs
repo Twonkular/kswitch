@@ -1,13 +1,12 @@
-use std::arch::x86_64::_mm_sha1nexte_epu32;
-
 use crate::theme::Theme;
-use chrono::{Local, NaiveTime};
+use chrono::NaiveTime;
+use log;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-struct Window {
-    theme: Theme,
-    start: NaiveTime,
+pub struct Window {
+    pub theme: Theme,
+    pub start: NaiveTime,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -17,6 +16,7 @@ pub struct Schedule {
 
 impl Default for Schedule {
     fn default() -> Self {
+        log::debug!("Creating default schedule");
         Schedule {
             windows: vec![
                 Window {
@@ -36,6 +36,11 @@ impl Default for Schedule {
 
 impl Schedule {
     pub fn theme_from_time(&self, time: &NaiveTime) -> Theme {
+        log::debug!(
+            "Determining theme from schedule for time: {}",
+            time.format("%H:%M:%S")
+        );
+
         // Sort windows by start time (if not guaranteed)
         let mut sorted = self.windows.clone();
         sorted.sort_by_key(|w| w.start);
@@ -48,7 +53,15 @@ impl Schedule {
             .map(|w| w.theme.clone());
 
         // If none matched, use the last window (wrap around midnight)
-        theme.unwrap_or_else(|| sorted.last().unwrap().theme.clone())
+        let result = theme.unwrap_or_else(|| sorted.last().unwrap().theme.clone());
+
+        log::debug!(
+            "Schedule lookup at {}: theme = {}",
+            time.format("%H:%M:%S"),
+            result.to_string()
+        );
+
+        result
     }
 }
 
