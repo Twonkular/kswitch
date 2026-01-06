@@ -1,11 +1,12 @@
 use dirs;
+use log;
 use serde::{Deserialize, Serialize};
-use std::env;
 use std::error::Error;
 use std::fs::{File, create_dir_all};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
+use std::{env, fs};
 use toml;
 
 use crate::schedule::Schedule;
@@ -15,6 +16,10 @@ use crate::theme::Style;
 pub struct Config {
     #[serde(skip)]
     pub path: PathBuf,
+    #[serde(skip)]
+    pub light_scripts_dir: PathBuf,
+    #[serde(skip)]
+    pub dark_scripts_dir: PathBuf,
     pub light: Style,
     pub dark: Style,
     pub schedule: Schedule,
@@ -41,7 +46,9 @@ impl Default for Config {
         };
         let schedule = Schedule::default();
         Config {
-            path: path,
+            path: path.clone(),
+            light_scripts_dir: path.parent().unwrap().join("light"),
+            dark_scripts_dir: path.parent().unwrap().join("dark"),
             light: light_style,
             dark: dark_style,
             schedule: schedule,
@@ -64,12 +71,16 @@ impl Config {
             create_dir_all(parent).unwrap();
         }
 
+        // create script dirs if needed
+        self.create_script_dirs();
+
         // Open a file in write mode
         let mut file = File::create(&self.path)?;
 
         // Write the serialized string to the file
         file.write_all(toml_string.as_bytes())?;
 
+        log::info!("Saved config to {}", self.path.to_string_lossy());
         Ok(())
     }
 
@@ -83,11 +94,12 @@ impl Config {
         // execute command
         match command.spawn() {
             Ok(mut child) => match child.wait() {
-                Ok(status) => println!("Editor exited with status: {}", status),
-                Err(e) => eprintln!("Failed to wait on editor process: {}", e),
+                Ok(status) => log::info!("Editor exited with status: {}", status),
+                Err(e) => log::error!("Failed to wait on editor process: {}", e),
             },
-            Err(e) => eprintln!("Failed to start editor: {}", e),
+            Err(e) => log::error!("Failed to start editor: {}", e),
         };
+
         Ok(())
     }
 
@@ -103,7 +115,44 @@ impl Config {
         let mut config: Config = toml::from_str(&contents)?;
         config.path = dirs::config_dir().unwrap().join("kswitch/config.toml");
 
+        // create script dirs if needed
+        config.light_scripts_dir = config.path.parent().unwrap().join("light");
+        config.dark_scripts_dir = config.path.parent().unwrap().join("dark");
+        config.create_script_dirs();
+
+        log::info!("Loaded config from {}", file_path.to_string_lossy());
         Ok(config)
+    }
+
+    /// Create light and dark script dirs if they do not exist
+    fn create_script_dirs(&self) {
+        // Light
+        if !&self.light_scripts_dir.is_dir() {
+            match fs::create_dir(&self.light_scripts_dir) {
+                Err(_) => log::error!(
+                    "Failed to create scripts dir at: {}",
+                    &self.light_scripts_dir.to_string_lossy()
+                ),
+                Ok(_) => log::info!(
+                    "Created scripts dir at: {}",
+                    &self.light_scripts_dir.to_string_lossy()
+                ),
+            }
+        }
+
+        // Dark
+        if !&self.dark_scripts_dir.is_dir() {
+            match fs::create_dir(&self.dark_scripts_dir) {
+                Err(_) => log::error!(
+                    "Failed to create scripts dir at: {}",
+                    &self.dark_scripts_dir.to_string_lossy()
+                ),
+                Ok(_) => log::info!(
+                    "Created scripts dir at: {}",
+                    &self.dark_scripts_dir.to_string_lossy()
+                ),
+            }
+        }
     }
 }
 
@@ -131,7 +180,9 @@ mod tests {
             terminal_profile: String::from("light"),
         };
         let conf = Config {
-            path: temp_dir().join("testconfig.toml"),
+            path: temp_dir().join("test_config.toml"),
+            light_scripts_dir: temp_dir().join("test_config_light"),
+            dark_scripts_dir: temp_dir().join("test_config_dark"),
             light: light_style,
             dark: dark_style,
             schedule: Schedule::default(),
