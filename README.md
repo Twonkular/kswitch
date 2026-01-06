@@ -89,7 +89,7 @@ kswitch config edit
 - [ ] Add support for user-defined scripts:
     - `~/.config/kswitch/light/`
     - `~/.config/kswitch/dark/`
-    - [ ] create directories if empty
+    - [x] create directories if empty
     - [ ] populate list of files to run on switch
     - [ ] execute files on switch
 

@@ -14,6 +14,7 @@ use crate::theme::Theme;
 use clap::Parser;
 
 fn main() {
+    env_logger::init();
     // parse config
     let config_path = dirs::config_dir().unwrap().join("kswitch/config.toml");
     let config = match config_path.is_file() {
