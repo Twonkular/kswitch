@@ -1,7 +1,7 @@
 use crate::config::Config;
 use crate::set::{color_scheme, global_theme, konsole, wallpaper};
+use crate::state::StateManager;
 use crate::theme::Theme;
-use std::env::set_var;
 use std::process::Command;
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -64,22 +64,20 @@ pub fn set(theme: &Theme, config: &Config) {
     log::debug!("Applying Konsole profile for theme: {}", theme.to_string());
     konsole::set(&theme, &config);
 
-    // set environment variable for theme
-    let theme_str = theme.to_string();
-    log::debug!(
-        "Setting KSWITCH_THEME environment variable to: {}",
-        theme_str
-    );
-    let _ = Command::new("systemctl")
-        .arg("--user")
-        .arg("import-environment")
-        .arg("KSWITCH_THEME")
-        .env("KSWITCH_THEME", &theme_str)
-        .status();
-
-    // set environment variable for current session
-    unsafe {
-        let _ = set_var("KSWITCH_THEME", &theme_str);
+    // Save the theme state to file
+    log::debug!("Saving theme state: {}", theme.to_string());
+    match StateManager::new() {
+        Ok(state_manager) => match state_manager.save(theme) {
+            Ok(_) => {
+                log::debug!("Theme state persisted successfully");
+            }
+            Err(e) => {
+                log::warn!("Failed to save theme state: {}", e);
+            }
+        },
+        Err(e) => {
+            log::warn!("Failed to initialize state manager for saving: {}", e);
+        }
     }
 
     // Run user scripts for the theme
@@ -174,7 +172,7 @@ pub fn toggle(config: &Config) {
         target_theme.to_string()
     );
 
-    // set to non-current state
+    // set to target theme
     set(&target_theme, &config);
 }
 

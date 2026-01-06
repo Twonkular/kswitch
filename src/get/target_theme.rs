@@ -1,10 +1,8 @@
+use crate::config::Config;
+use crate::state::StateManager;
 use crate::theme::Theme;
 use chrono::Local;
 use log;
-use std::env;
-use std::str::FromStr;
-
-use crate::config::Config;
 
 fn get_theme_from_schedule(config: &Config) -> Theme {
     let time = Local::now().naive_local().time();
@@ -17,39 +15,42 @@ fn get_theme_from_schedule(config: &Config) -> Theme {
     theme
 }
 
-/// Gets the current kswitch theme, either by reading the environment variable, if it exists, otherwise it is determined from the time of day and the schedule defined in config.
+/// Gets the target theme for toggling by reading the saved state file.
+/// If the state file doesn't exist, falls back to schedule-based theme determination.
 pub fn get(config: &Config) -> Theme {
     log::debug!("Determining target theme for toggle");
 
-    match env::var("KSWITCH_THEME") {
-        Ok(theme_str) => {
-            log::debug!("KSWITCH_THEME environment variable found: {}", theme_str);
-            // Try to get the theme from environment_variable
-            match Theme::from_str(theme_str.as_str()) {
-                Ok(current) => {
-                    let target = match current {
+    match StateManager::new() {
+        Ok(state_manager) => {
+            match state_manager.load() {
+                Ok(state) => {
+                    log::debug!(
+                        "Current theme from state file: {}",
+                        state.current_theme.to_string()
+                    );
+                    // Return the opposite theme for toggle
+                    let target = match state.current_theme {
                         Theme::Dark => Theme::Light,
                         Theme::Light => Theme::Dark,
                     };
                     log::debug!(
-                        "Current theme from env: {}, target theme: {}",
-                        current.to_string(),
+                        "Current theme: {}, target theme: {}",
+                        state.current_theme.to_string(),
                         target.to_string()
                     );
                     target
                 }
-                Err(_) => {
+                Err(e) => {
                     log::warn!(
-                        "Invalid KSWITCH_THEME value: {}, falling back to schedule",
-                        theme_str
+                        "Failed to load theme state: {}, falling back to schedule",
+                        e
                     );
                     get_theme_from_schedule(config)
                 }
             }
         }
-        Err(_) => {
-            log::debug!("KSWITCH_THEME environment variable not set, using schedule");
-            // otherwise get the current from time of day
+        Err(e) => {
+            log::error!("Failed to initialize state manager: {}, using schedule", e);
             get_theme_from_schedule(config)
         }
     }
