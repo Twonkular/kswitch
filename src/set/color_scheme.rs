@@ -1,20 +1,36 @@
-use std::fs;
+use log;
 use std::io::Error;
-use std::path::PathBuf;
 use std::process::{Command, Output};
 
 pub fn set(color_scheme_name: &String) -> Result<Output, Error> {
+    log::info!("Applying color scheme: {}", color_scheme_name);
     let out = Command::new("plasma-apply-colorscheme")
         .arg(color_scheme_name)
         .output();
+
+    match &out {
+        Ok(output) if output.status.success() => {
+            log::info!("Color scheme applied successfully: {}", color_scheme_name);
+        }
+        Ok(output) => {
+            log::warn!(
+                "Failed to apply color scheme {}: {:?}",
+                color_scheme_name,
+                output.status
+            );
+        }
+        Err(e) => {
+            log::error!("Error applying color scheme {}: {}", color_scheme_name, e);
+        }
+    }
     out
 }
 
 /// Returns the current KDE Plasma color scheme name, if found.
 #[cfg(test)] // only build for tests
 fn get_current_color_scheme() -> Option<String> {
-    let config_path: PathBuf = dirs::home_dir()?.join(".config/kdeglobals");
-    let contents = fs::read_to_string(config_path).ok()?;
+    let config_path = dirs::home_dir()?.join(".config/kdeglobals");
+    let contents = std::fs::read_to_string(config_path).ok()?;
 
     let mut in_general_section = false;
     for line in contents.lines() {
