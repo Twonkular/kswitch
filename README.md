@@ -86,6 +86,12 @@ kswitch config edit
         - [x] Save to file
         - [x] Edit via default editor
     - [x] Auto-create at default location
+- [ ] Add support for user-defined scripts:
+    - `~/.config/kswitch/light/`
+    - `~/.config/kswitch/dark/`
+    - [ ] create directories if empty
+    - [ ] populate list of files to run on switch
+    - [ ] execute files on switch
 
 ## Future Improvements
 
@@ -94,9 +100,6 @@ kswitch config edit
 - [ ] Prioritize visible windows during theme switch
 - [ ] Implement timed changes via `systemctl` and `systemd` timers
 - [ ] Create custom wallpaper plugin using QML/Plasmoid for transition effects
-- [ ] Add support for user-defined scripts:
-    - `~/.config/kswitch/light.sh`
-    - `~/.config/kswitch/dark.sh`
 - [ ] Allow disabling individual features (e.g., don't change wallpaper)
 - [ ] Replace binary dependencies with full D-Bus control
 - [ ] Automatic scheduling based on user config
