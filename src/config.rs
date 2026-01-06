@@ -1,11 +1,12 @@
 use dirs;
+use log;
 use serde::{Deserialize, Serialize};
-use std::env;
 use std::error::Error;
 use std::fs::{File, create_dir_all};
 use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::process::Command;
+use std::{env, fs};
 use toml;
 
 use crate::schedule::Schedule;
@@ -15,6 +16,10 @@ use crate::theme::Style;
 pub struct Config {
     #[serde(skip)]
     pub path: PathBuf,
+    #[serde(skip)]
+    pub light_scripts_dir: PathBuf,
+    #[serde(skip)]
+    pub dark_scripts_dir: PathBuf,
     pub light: Style,
     pub dark: Style,
     pub schedule: Schedule,
@@ -41,7 +46,9 @@ impl Default for Config {
         };
         let schedule = Schedule::default();
         Config {
-            path: path,
+            path: path.clone(),
+            light_scripts_dir: path.clone().join("light"),
+            dark_scripts_dir: path.join("dark"),
             light: light_style,
             dark: dark_style,
             schedule: schedule,
@@ -69,6 +76,35 @@ impl Config {
 
         // Write the serialized string to the file
         file.write_all(toml_string.as_bytes())?;
+
+        // Create light and dark script dirs if they do not exist
+        // Light
+        if !&self.light_scripts_dir.is_dir() {
+            match fs::create_dir(&self.light_scripts_dir) {
+                Err(_) => log::error!(
+                    "Failed to create scripts dir at: {}",
+                    &self.light_scripts_dir.to_string_lossy()
+                ),
+                Ok(_) => log::info!(
+                    "Created scripts dir at: {}",
+                    &self.light_scripts_dir.to_string_lossy()
+                ),
+            }
+        }
+
+        // Dark
+        if !&self.dark_scripts_dir.is_dir() {
+            match fs::create_dir(&self.dark_scripts_dir) {
+                Err(_) => log::error!(
+                    "Failed to create scripts dir at: {}",
+                    &self.dark_scripts_dir.to_string_lossy()
+                ),
+                Ok(_) => log::info!(
+                    "Created scripts dir at: {}",
+                    &self.dark_scripts_dir.to_string_lossy()
+                ),
+            }
+        }
 
         Ok(())
     }
@@ -131,7 +167,9 @@ mod tests {
             terminal_profile: String::from("light"),
         };
         let conf = Config {
-            path: temp_dir().join("testconfig.toml"),
+            path: temp_dir().join("test_config.toml"),
+            light_scripts_dir: temp_dir().join("test_config_light"),
+            dark_scripts_dir: temp_dir().join("test_config_dark"),
             light: light_style,
             dark: dark_style,
             schedule: Schedule::default(),
