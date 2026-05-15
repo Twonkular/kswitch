@@ -2,6 +2,13 @@
 name = "kswitch"
 version = "1.0.0"
 edition = "2024"
+description = "A simple command line tool for light/dark theme switching in KDE Plasma."
+license = "MIT"
+repository = "https://github.com/Twonkular/kswitch"
+homepage = "https://github.com/Twonkular/kswitch"
+readme = "README.md"
+keywords = ["theme", "switcher", "light", "dark", "kde", "Plasma", "manjaro"]
+categories = ["command-line-utilities", "config"]
 
 [dependencies]
 chrono = "0.4.41"
