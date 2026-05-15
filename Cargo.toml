@@ -7,7 +7,7 @@ license = "MIT"
 repository = "https://github.com/Twonkular/kswitch"
 homepage = "https://github.com/Twonkular/kswitch"
 readme = "README.md"
-keywords = ["theme", "switcher", "light", "dark", "kde", "Plasma", "manjaro"]
+keywords = ["theme", "switcher", "light", "dark", "kde"]
 categories = ["command-line-utilities", "config"]
 
 [dependencies]
