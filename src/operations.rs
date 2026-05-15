@@ -131,7 +131,11 @@ fn run_theme_scripts(theme: &Theme, config: &Config) {
 
             for path in script_files {
                 log::info!("Running script: {}", path.to_string_lossy());
-                match Command::new(&path).status() {
+                match Command::new("sh")
+                    .arg("-c")
+                    .arg(format!("source {}", &path.display()))
+                    .status()
+                {
                     Ok(status) => {
                         if status.success() {
                             log::info!("Script executed successfully: {}", path.to_string_lossy());

@@ -38,20 +38,28 @@ kswitch set dark       # Force dark mode
 kswitch config edit    # Open config in your default editor
 ```
 
-You can create a custom keyboard shortcut in KDE System Settings to run `kswitch toggle`.
-
 ## Configuration
 
 `kswitch` uses a simple TOML config file located at:
 
-```
+```sh
 ~/.config/kswitch/config.toml
 ```
 
-It includes paths and names of your preferred themes, wallpapers, etc. The config can be created or edited via:
+It includes paths and names of your preferred themes, wallpapers, etc. The config can be created or edited using your default editor with:
 
 ```sh
 kswitch config edit
+```
+
+## Configuring a keyboard shortcut
+
+You can create a custom keyboard shortcut in KDE System Settings to run `kswitch toggle`.
+
+Recommended shortcut command:
+
+```sh
+sh -c "kswitch toggle"
 ```
 
 ## Warnings
@@ -104,6 +112,7 @@ kswitch config edit
 - [ ] Replace binary dependencies with full D-Bus control
 - [ ] Automatic scheduling based on user config
 - [ ] Sunrise/sunset-based scheduling using [`sunrise`](https://crates.io/crates/sunrise)
+- [ ] Support for other terminal emulators.
 
 ## License
 
@@ -115,4 +124,4 @@ Feel free to open issues or submit pull requests. Cannot promise I will look at 
 
 ## Existing solutions
 
-Take a look at [koi](https://github.com/baduhai/Koi) and [YinYang](https://github.com/oskarsh/Yin-Yang). These do similar things, but there is no way to create a keyboard shortcut in Koi, and YinYang feels slow. Neither offer theme switching on Konsole sessions.
+Take a look at [koi](https://github.com/baduhai/Koi) and [YinYang](https://github.com/oskarsh/Yin-Yang). These do similar things, but there is no way to create a keyboard shortcut in Koi, and YinYang feels slow. Neither offer theme switching on active Konsole sessions.
