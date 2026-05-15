@@ -21,6 +21,12 @@ A simple command line tool for light/dark theme switching in KDE Plasma.
 - Rust (for building from source)
 - `cargo` for installation
 
+### From Cargo
+
+```sh
+cargo install kswitch
+```
+
 ### From Source
 
 ```sh
